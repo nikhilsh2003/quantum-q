@@ -1,4 +1,4 @@
-package com.quantum_q.quantum_q;
+package com.myProject.quantum_q;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

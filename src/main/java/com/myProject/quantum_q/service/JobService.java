@@ -13,7 +13,6 @@ import java.util.UUID;
 @Service
 public class JobService {
 
-    private static final String QUEUE_NAME = "queues:normal";
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper; // Spring Boot auto-configures this bean
@@ -35,8 +34,9 @@ public class JobService {
             String jobJson = objectMapper.writeValueAsString(job);
 
             // Push the job to the left of the list (LPUSH)
-            logger.debug("Pushing job {} to Redis queue: {}", jobId, QUEUE_NAME);
-            redisTemplate.opsForList().leftPush(QUEUE_NAME, jobJson);
+            String queueName = "queues:" + jobRequest.priority().toLowerCase();
+            logger.debug("Pushing job {} to Redis queue: {}", jobId, queueName);
+            redisTemplate.opsForList().leftPush(queueName, jobJson);
             logger.info("Successfully enqueued job with ID: {}", jobId);
 
             return jobId;

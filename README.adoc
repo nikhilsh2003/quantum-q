@@ -1,0 +1,108 @@
+= QuantumQ: A Cloud-Native, Observable Job Queue System
+:toc:
+:icons: font
+
+image:https://img.shields.io/github/actions/workflow/status/nikhilsh2003/quantum-q/main.yml?branch=main&style=for-the-badge[Build Status, link="https://github.com/your-username/quantum-q/actions"]
+image:https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge[License: MIT, link="https://opensource.org/licenses/MIT"]
+
+=== link:https://your-deployment-link.com[🚀 Check out the live demo here!]
+
+'''
+
+QuantumQ is a *cloud-native*, *microservice-ready* distributed job queue system engineered for high-throughput *asynchronous processing*. It features a *fault-tolerant* architecture with prioritized queues and exponential backoff retries, all managed through a live, interactive dashboard. The entire system is built for *real-time observability* using Prometheus and Grafana and is deployed automatically via a complete *CI/CD* pipeline.
+
+=== Animated Demo
+
+image::path/to/your/demo.gif[QuantumQ Live Dashboard Demo]
+
+'''
+
+=== 🏛️ Architecture
+
+The system uses a decoupled API/Worker architecture with Redis as the central broker. Real-time observability is achieved by scraping metrics with Prometheus and visualizing them in Grafana.
+
+[source,text]
+----
+                                  +---------------------------+
+[Live Web UI (Thymeleaf/JS)]      |     Observability Stack   |
+       |                          |  [Prometheus] -> [Grafana]|
+       v                          +------------#--------------+
++------------------------+      (2) Enqueue    #      (5) Poll
+|   API Server (SB)      |----------->+-----------+----------->+------------------+
+| exposes /actuator/.. --+------------+   Redis   +<-----------+   Worker (SB)    |
+| /jobs, /metrics        |            | (Queues,  |  (4) Update | processes job..  |
++------------------------+      (3) Status       +-----------+  | exposes /actuator|
+       ^                          (HSET)         | (6) Result   | .. --+-----------+
+       |                                         |              |      #
+       +-----------------------------------------+              +------+
+                  (7) Read metrics for dashboard
+----
+
+'''
+
+=== ✨ Features Checklist
+
+* [x] *Tier 1: Core Engine*: Basic job submission, queuing, and processing.
+* [x] *Tier 2: Production-Grade Resiliency*: Prioritized queues, atomic processing, automatic retries with backoff, and a Dead-Letter Queue.
+* [x] *Tier 3: Observability & Live Experience*: Prometheus metrics, Grafana dashboards, and a live, interactive web UI.
+* [x] *Fully Automated*: Containerized with Docker and deployed via a complete CI/CD pipeline using GitHub Actions.
+
+'''
+
+=== 🛠️ Tech Stack
+
+image:https://img.shields.io/badge/Spring_Boot-3.x-6DB33F?style=for-the-badge&logo=springboot[Spring Boot]
+image:https://img.shields.io/badge/Java-21+-ED8B00?style=for-the-badge&logo=openjdk[Java]
+image:https://img.shields.io/badge/Redis-7.x-DC382D?style=for-the-badge&logo=redis[Redis]
+image:https://img.shields.io/badge/Docker-20.x-2496ED?style=for-the-badge&logo=docker[Docker]
+image:https://img.shields.io/badge/Prometheus-v2.x-E6522C?style=for-the-badge&logo=prometheus[Prometheus]
+image:https://img.shields.io/badge/Grafana-10.x-F46800?style=for-the-badge&logo=grafana[Grafana]
+image:https://img.shields.io/badge/GitHub_Actions-CI/CD-2088FF?style=for-the-badge&logo=githubactions[GitHub Actions]
+
+'''
+
+=== 🚀 Run Locally
+
+The entire environment is containerized. All you need is *Docker* and *Docker Compose* installed.
+
+. *Clone the repository:*
++
+[source,bash]
+----
+git clone https://github.com/your-username/quantum-q.git
+cd quantum-q
+----
+
+. *Build and run all services:*
++
+[source,bash]
+----
+docker-compose up --build
+----
+
+. *Access the services:*
++
+- *QuantumQ Web UI*: `http://localhost:8080`
+- *Grafana Dashboard*: `http://localhost:3000` (login: `admin` / `admin`)
+- *Prometheus UI*: `http://localhost:9090`
+
+'''
+
+=== <caption> API Usage
+
+.Submit a New Job
+[source,bash]
+----
+curl -X POST http://localhost:8080/jobs \
+-H "Content-Type: application/json" \
+-d '{
+  "priority": "HIGH",
+  "payload": { "task": "generate_report", "user_id": 123 }
+}'
+----
+
+.Check Job Status
+[source,bash]
+----
+curl http://localhost:8080/jobs/{jobId}
+----

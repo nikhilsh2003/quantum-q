@@ -1,36 +1,25 @@
-version: '3.8'
+# prometheus.yml
 
-services:
-  quantumq:
-    build: .
-    container_name: quantumq-app
-    ports:
-      - "8080:8080"
-    depends_on:
-      - redis
-    environment:
-      - SPRING_DATA_REDIS_HOST=redis
-      - SPRING_DATA_REDIS_PORT=6379
-      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=prometheus,health
+# Global configuration settings
+global:
+  scrape_interval: 15s # How often to scrape targets. 15 seconds is a good default.
+  evaluation_interval: 15s # How often to evaluate rules.
 
-  redis:
-    image: redis:7-alpine
-    container_name: quantumq-redis
+# A list of scrape configurations.
+scrape_configs:
+  # This job scrapes metrics from the Prometheus server itself.
+  # It's good practice to monitor the monitor.
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
 
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: quantumq-prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-
-  grafana:
-    image: grafana/grafana-oss:latest
-    container_name: quantumq-grafana
-    ports:
-      - "3000:3000"
-    depends_on:
-      - prometheus
+  # This is the crucial job for your application.
+  # It tells Prometheus how to find and scrape metrics from your 'quantumq' service.
+  - job_name: 'quantumq-app'
+    # The path where Spring Boot Actuator exposes Prometheus metrics.
+    # This matches the 'MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=prometheus' in your docker-compose.
+    metrics_path: '/actuator/prometheus'
+    # Docker Compose lets us use the service name 'quantumq' as the hostname.
+    # Prometheus will connect to http://quantumq:8080/actuator/prometheus to get the metrics.
+    static_configs:
+      - targets: ['quantumq:8080']

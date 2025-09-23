@@ -6,26 +6,37 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle Job Submission
     jobForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const payload = document.getElementById('payload').value;
+        const payloadText = document.getElementById('payload').value;
         const priority = document.getElementById('priority').value;
+        const formFeedback = document.getElementById('form-feedback');
 
+        let payload;
         try {
-            const parsedPayload = JSON.parse(payload);
+            // First, ensure the text in the textarea is valid JSON
+            payload = JSON.parse(payloadText);
+        } catch (error) {
+            formFeedback.innerHTML = `<div class="alert alert-danger">❌ Invalid JSON in payload. Please check your syntax.</div>`;
+            return;
+        }
+
+        // Now, send the request to the backend
+        try {
             const response = await fetch('/jobs', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ priority, payload: parsedPayload })
+                body: JSON.stringify({ priority, payload }) // This structure matches our JobRequest DTO
             });
 
             if (response.ok) {
                 const result = await response.json();
                 formFeedback.innerHTML = `<div class="alert alert-success">✅ Job enqueued with ID: ${result.jobId}</div>`;
-                jobForm.reset();
+                document.getElementById('payload').value = ''; // Clear the textarea on success
             } else {
-                formFeedback.innerHTML = `<div class="alert alert-danger">❌ Failed to enqueue job.</div>`;
+                const error = await response.text();
+                formFeedback.innerHTML = `<div class="alert alert-danger">❌ Failed to enqueue job. Server responded: ${error}</div>`;
             }
         } catch (error) {
-            formFeedback.innerHTML = `<div class="alert alert-danger">❌ Invalid JSON payload.</div>`;
+            formFeedback.innerHTML = `<div class="alert alert-danger">❌ Network error or server is down.</div>`;
         }
     });
 
